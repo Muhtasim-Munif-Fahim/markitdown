@@ -14,6 +14,7 @@ from markitdown import (
     FileConversionException,
     StreamInfo,
 )
+from markitdown.converters import IpynbConverter
 
 # This file contains module tests that are not directly tested by the FileTestVectors.
 # This includes things like helper functions and runtime conversion options
@@ -380,6 +381,15 @@ def test_exceptions() -> None:
         )
     assert len(exc_info.value.attempts) == 1
     assert type(exc_info.value.attempts[0].converter).__name__ == "PptxConverter"
+
+
+def test_ipynb_accepts_rejects_undecodable_json_stream() -> None:
+    converter = IpynbConverter()
+    stream = io.BytesIO("café".encode("utf-8"))
+    stream_info = StreamInfo(mimetype="application/json", charset="ascii")
+
+    assert converter.accepts(stream, stream_info) is False
+    assert stream.tell() == 0
 
 
 @pytest.mark.skipif(
